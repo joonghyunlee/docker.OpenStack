@@ -13,12 +13,15 @@ OS_IDENTITY_API_VERSION=3
 # configure Keystone Service
 openstack-config --set /etc/keystone/keystone.conf DEFAULT admin_token $ADMIN_TOKEN
 openstack-config --set /etc/keystone/keystone.conf DEFAULT use_stder True
-openstack-config --set /etc/keystone/keystone.conf database connection ${CONNECTION:-mysql://keystone:6HN6gbDNtFY@openstack-mysql/keystone}
+openstack-config --set /etc/keystone/keystone.conf database connection ${CONNECTION:-mysql+pymysql://keystone:6HN6gbDNtFY@openstack-mysql/keystone}
+openstack-config --set /etc/keystone/keystone.conf token provider fernet
 cat /etc/keystone/keystone.conf
 
 # initialize Fernet keys
-keystone-manage fernet_setup --keystone-user root --keystone-group root
+keystone-manage fernet_setup --keystone-user keystone --keystone-group keystone
+keystone-manage credential_setup --keystone-user keystone --keystone-group keystone
 mv /etc/keystone/default_catalog.templates /etc/keystone/default_catalog
+chown -R keystone:keystone /etc/keystone
 
 su keystone -s /bin/sh -c "keystone-manage db_sync"
 
@@ -28,7 +31,9 @@ systemctl list-unit-files | grep enabled
 
 cp /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
 rm -rf /run/httpd/* /tmp/httpd*
-exec /usr/sbin/apachectl -DFOREGROUND
+#exec /usr/sbin/apachectl -DFOREGROUND
+systemctl enable httpd.service
+systemctl start httpd.service
 
 # initialize account
 openstack service create --name keystone identity

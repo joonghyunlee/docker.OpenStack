@@ -1,6 +1,7 @@
 #!/bin/bash
 
 docker run \
+    --privileged \
     --detach \
     --name keystone \
     --hostname keystone \
