@@ -24,16 +24,21 @@ mv /etc/keystone/default_catalog.templates /etc/keystone/default_catalog
 chown -R keystone:keystone /etc/keystone
 
 su keystone -s /bin/sh -c "keystone-manage db_sync"
+/usr/bin/keystone-wsgi-admin --port 35357 &
 
-ls -al /usr/bin/
-ls -al /usr/share/keystone/
-systemctl list-unit-files | grep enabled
+cat > /keystonerc <<EOF
+export OS_TOKEN=${ADMIN_TOKEN}
+export OS_PROJECT_DOMAIN_NAME=default
+export OS_USER_DOMAIN_NAME=default
+export OS_PROJECT_NAME=${ADMIN_TENANT_NAME}
+export OS_USERNAME=${ADMIN_USERNAME}
+export OS_PASSWORD=${ADMIN_PASSWORD}
+export OS_AUTH_URL=http://${HOSTNAME}:35357/v3
+export OS_IDENTITY_API_VERSION=3
+export OS_IMAGE_API_VERSION=2
+EOF
 
-cp /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
-rm -rf /run/httpd/* /tmp/httpd*
-#exec /usr/sbin/apachectl -DFOREGROUND
-systemctl enable httpd.service
-systemctl start httpd.service
+source /keystonerc
 
 # initialize account
 openstack service create --name keystone identity
@@ -48,13 +53,6 @@ openstack user create --domain default --password $ADMIN_PASSWORD $ADMIN_USERNAM
 openstack role create admin
 openstack role add --project $ADMIN_TENANT_NAME --user $ADMIN_USERNAME admin
 
-cat > ~/keystonerc <<EOF
-export OS_PROJECT_DOMAIN_NAME=default
-export OS_USER_DOMAIN_NAME=default
-export OS_PROJECT_NAME=${ADMIN_TENANT_NAME}
-export OS_USERNAME=${ADMIN_USERNAME}
-export OS_PASSWORD=${ADMIN_PASSWORD}
-export OS_AUTH_URL=http://${HOSTNAME}:35357/v3
-export OS_IDENTITY_API_VERSION=3
-export OS_IMAGE_API_VERSION=2
-EOF
+cp /usr/share/keystone/wsgi-keystone.conf /etc/httpd/conf.d/
+rm -rf /run/httpd/* /tmp/httpd*
+exec /usr/sbin/apachectl -DFOREGROUND

@@ -4,8 +4,10 @@ RUN yum update -y && \
     yum install -y centos-release-openstack-rocky && \
     yum install -y httpd mod_wsgi && \
     yum install -y openstack-keystone openstack-utils openstack-selinux && \
+    yum install -y python-openstackclient && \
     yum clean all
 
+COPY wsgi-keystone.conf /tmp/wsgi-keystone.conf
 COPY bootstrap.sh /tmp/bootstrap.sh
 RUN chown root:root /tmp/bootstrap.sh & chmod a+x /tmp/bootstrap.sh
 
