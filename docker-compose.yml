@@ -1,0 +1,13 @@
+version: '2'
+services:
+  openstack-db:
+    images: mysql:5.7
+    volumes:
+      - "./mysql/data:/var/lib/mysql"
+    environment:
+      MYSQL_ROOT_PASSWORD: New1234!
+
+  keystone:
+    depends_on:
+      - openstack-db
+    image: index.docker.io/centos:7

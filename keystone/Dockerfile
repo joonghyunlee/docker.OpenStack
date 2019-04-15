@@ -7,7 +7,6 @@ RUN yum update -y && \
     yum install -y python-openstackclient && \
     yum clean all
 
-COPY wsgi-keystone.conf /tmp/wsgi-keystone.conf
 COPY bootstrap.sh /tmp/bootstrap.sh
 RUN chown root:root /tmp/bootstrap.sh & chmod a+x /tmp/bootstrap.sh
 
