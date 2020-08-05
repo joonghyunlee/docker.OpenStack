@@ -1,0 +1,18 @@
+version: 0.1
+log:
+  level: debug
+storage:
+  cache:
+    blobdescriptor: inmemory
+  swift:
+    username: joonghyun.lee@nhn.com
+    password: 'PASSWORD'
+    authurl: https://api-identity.infrastructure.cloud.toast.com/v3
+    authversion: 3
+    tenantid: 'TENANT_ID'
+    domainid: default
+    region: KR1
+    insecureskipverify: true
+    container: registry
+  delete:
+    enabled: true

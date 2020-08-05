@@ -1,0 +1,48 @@
+version: '2'
+services:
+  registry1:
+    container_name: registry1
+    restart: always
+    image: registry:latest
+    volumes:
+      - "./config.yml:/etc/docker/registry/config.yml"
+      - "./registry.crt:/etc/certs/registry.crt"
+      - "./registry.key:/etc/certs/registry.key"
+    environment:
+      REGISTRY_HTTP_ADDR: 0.0.0.0:5001
+      REGISTRY_HTTP_SECRET: 'New1234'
+      REGISTRY_HTTP_TLS_CERTIFICATE: '/etc/certs/registry.crt'
+      REGISTRY_HTTP_TLS_KEY: '/etc/certs/registry.key'
+    expose:
+      - "5001"
+
+  registry2:
+    container_name: registry2
+    restart: always
+    image: registry:latest
+    volumes:
+      - "./config.yml:/etc/docker/registry/config.yml"
+      - "./registry.crt:/etc/certs/registry.crt"
+      - "./registry.key:/etc/certs/registry.key"
+    environment:
+      REGISTRY_HTTP_ADDR: 0.0.0.0:5002
+      REGISTRY_HTTP_SECRET: 'New1234'
+      REGISTRY_HTTP_TLS_CERTIFICATE: '/etc/certs/registry.crt'
+      REGISTRY_HTTP_TLS_KEY: '/etc/certs/registry.key'
+    expose:
+      - "5002"
+
+  nginx:
+    container_name: nginx
+    restart: always
+    image: nginx:1.18
+    links:
+      - registry1
+      - registry2
+    ports:
+      - '5000:5000'
+    volumes:
+      - "./nginx.conf:/etc/nginx/nginx.conf"
+      - "./registry.crt:/etc/registry.crt"
+      - "./registry.key:/etc/registry.key"
+
